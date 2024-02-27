@@ -174,6 +174,6 @@ public class PseudoRandom {
         System.out.println("[3..4)                " + occurrences[8]);
         System.out.println("[4..5)                " + occurrences[9]);
 
-        //Todo: clean this^ shit up.
+        //Todo: clean this^ up.
     }
 }
