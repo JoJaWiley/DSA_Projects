@@ -29,6 +29,7 @@ public class PseudoRandom {
     }
 
     public double nextNormalizedRand() {
+        //generates uniformly distributed pseudorandom number for good values of fields
         int next = nextRand();
         return next/((double) modulus);
     }
@@ -42,6 +43,7 @@ public class PseudoRandom {
 
         int[] occurrences = new int[10];
 
+        //for 1 million experiments, print the occurrences in a 10x partitioned unit interval [0, 1) - ie, generate & print a histogram
         for (int i = 0; i < 999999; i++) {
             double next = pr.nextNormalizedRand();
 
@@ -75,18 +77,21 @@ public class PseudoRandom {
         double r2 = nextNormalizedRand();
         double r3 = nextNormalizedRand();
 
+        //this approximation is crap - see the test histogram!
         return median + (2*(r1 + r2 + r3) - 3)*variance;
     }
 
     public void gaussianExperiments(double median, double variance) {
+        //generates the test histogram
         int[] occurrences = new int[10];
 
         for (int i = 0; i < 999999; i++) {
             double next = nextGaussian(median, variance);
 
-            //standard deviation
+            //standard deviation is square root of variance
             double deviation = Math.sqrt(variance);
 
+            //standard partitioning for Gaussian distribution out to 5 standard deviations
             if (next >= median - 5*deviation && next < median - 4*deviation) occurrences[0]++;
             else if (next >= median - 4*deviation && next < median - 3*deviation) occurrences[1]++;
             else if (next >= median - 3*deviation && next < median - 2*deviation) occurrences[2]++;
@@ -116,6 +121,8 @@ public class PseudoRandom {
         double r1 = nextNormalizedRand();
         double r2 = nextNormalizedRand();
 
+        //this is the Box Muller transform. Gives a Gaussian with mean 0, variance 1.
+        //ToDO: extend to Gaussian with any given mean & variance using Z*deviation + mean
         double sqrt = Math.sqrt(-2 * Math.log(r1));
         if (ticker == 0) return sqrt *Math.cos(2*3.14*r2);
         if (ticker == 1) return sqrt *Math.sin(2*3.14*r2);
@@ -155,5 +162,7 @@ public class PseudoRandom {
         System.out.println("[2..3)                " + occurrences[7]);
         System.out.println("[3..4)                " + occurrences[8]);
         System.out.println("[4..5)                " + occurrences[9]);
+
+        //Todo: clean this^ shit up.
     }
 }
