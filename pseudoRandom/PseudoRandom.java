@@ -1,12 +1,19 @@
 package projects.pseudoRandom;
 
 public class PseudoRandom {
+    //starting value
     private int seed;
+    //linear multiplier
     private final int multiplier;
+    //linear increment
     private final int increment;
+    //fold the linear transformation over the modulus
     private final int modulus;
+    //for the Box Muller transform, which alternates between cos and sin return values
     private int ticker;
 
+    //this object can generate pseudoRandom integers uniformly distributed in the interval [0, modulus) - between 0 and the modulus - for good choice of
+    //field values
     public PseudoRandom(int seed, int multiplier, int increment, int modulus) {
         this.seed = seed;
         this.multiplier = multiplier;
@@ -18,6 +25,7 @@ public class PseudoRandom {
         this.seed = seed;
     }
 
+    //generate the next value
     public int nextRand() {
         int next = (multiplier*seed + increment)%modulus;
         seed = next;
@@ -28,8 +36,8 @@ public class PseudoRandom {
         System.out.println(nextRand());
     }
 
+    //generates uniformly distributed pseudorandom numbers in [0, 1) for good values of fields
     public double nextNormalizedRand() {
-        //generates uniformly distributed pseudorandom number for good values of fields
         int next = nextRand();
         return next/((double) modulus);
     }
@@ -38,12 +46,12 @@ public class PseudoRandom {
         System.out.println(nextNormalizedRand());
     }
 
+    //for 1 million experiments, print the occurrences in a 10x partitioned unit interval [0, 1) - ie, generate & print a histogram
     public static void experiments(int seed, int multiplier, int increment, int modulus) {
         PseudoRandom pr = new PseudoRandom(seed, multiplier, increment, modulus);
 
         int[] occurrences = new int[10];
 
-        //for 1 million experiments, print the occurrences in a 10x partitioned unit interval [0, 1) - ie, generate & print a histogram
         for (int i = 0; i < 999999; i++) {
             double next = pr.nextNormalizedRand();
 
@@ -72,6 +80,7 @@ public class PseudoRandom {
         System.out.println("[0.9..1.0)          " + occurrences[9]);
     }
 
+    //generate pseudorandom doubles in a crappy approximation to a Gaussian distribution
     public double nextGaussian(double median, double variance) {
         double r1 = nextNormalizedRand();
         double r2 = nextNormalizedRand();
@@ -117,6 +126,7 @@ public class PseudoRandom {
         System.out.println("[[median + 4sigma..median + 5sigma)              " + occurrences[9]);
     }
 
+    //Generate a better sequence of pseudorandom doubles with a Gaussian distribution
     public double nextBetterGaussian() {
         double r1 = nextNormalizedRand();
         double r2 = nextNormalizedRand();
@@ -131,6 +141,7 @@ public class PseudoRandom {
         return 0.0;
     }
 
+    //Get a bell shaped histogram FFS
     public void betterGaussianExperiments() {
         int[] occurrences = new int[10];
 
