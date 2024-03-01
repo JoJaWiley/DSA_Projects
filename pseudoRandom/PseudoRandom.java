@@ -55,33 +55,33 @@ public class PseudoRandom {
         for (int i = 0; i < 999999; i++) {
             double next = pr.nextNormalizedRand();
 
-            if (next >= 0 && next < 0.1) occurrences[0]++;
-            else if (next >= 0.1 && next < 0.2) occurrences[1]++;
-            else if (next >= 0.2 && next < 0.3) occurrences[2]++;
-            else if (next >= 0.3 && next < 0.4) occurrences[3]++;
-            else if (next >= 0.4 && next < 0.5) occurrences[4]++;
-            else if (next >= 0.5 && next < 0.6) occurrences[5]++;
-            else if (next >= 0.6 && next < 0.7) occurrences[6]++;
-            else if (next >= 0.7 && next < 0.8) occurrences[7]++;
-            else if (next >= 0.8 && next < 0.9) occurrences[8]++;
-            else if (next >= 0.9 && next < 1.0) occurrences[9]++;
+            for (int j = 0; j < occurrences.length; j++)
+                if (liesInUniformInterval(next, j)) occurrences[j]++;
         }
 
-        System.out.println("Range          Number of Occurrences");
-        System.out.println("[0.0..0.1)          " + occurrences[0]);
-        System.out.println("[0.1..0.2)          " + occurrences[1]);
-        System.out.println("[0.2..0.3)          " + occurrences[2]);
-        System.out.println("[0.3..0.4)          " + occurrences[3]);
-        System.out.println("[0.4..0.5)          " + occurrences[4]);
-        System.out.println("[0.5..0.6)          " + occurrences[5]);
-        System.out.println("[0.6..0.7)          " + occurrences[6]);
-        System.out.println("[0.7..0.8)          " + occurrences[7]);
-        System.out.println("[0.8..0.9)          " + occurrences[8]);
-        System.out.println("[0.9..1.0)          " + occurrences[9]);
+        printUniformHistogram(occurrences);
     }
+
+    //divide [0, 1) into 10 subintervals. test if a double element lies in the nth subdivision.
+    private static boolean liesInUniformInterval(double element, int n) {
+        return (element >= n*0.1 && element < (n + 1)*0.1);
+    }
+
+    //print out the histogram
+    private static void printUniformHistogram(int[] occurrences) {
+        System.out.printf("%-22s%s\n", "Range", "Number of Occurrences");
+        for (int i = 0; i < occurrences.length; i++) {
+            System.out.printf("[%.1f..%.1f)%19d\n", i*0.1, (i + 1)*0.1, occurrences[i]);
+        }
+    }
+
+
+    //--------------------textbook Gaussian methods
 
     //generate pseudorandom doubles in a crappy approximation to a Gaussian distribution
     public double nextGaussian(double median, double variance) {
+        validateVariance(variance);
+
         double r1 = nextNormalizedRand();
         double r2 = nextNormalizedRand();
         double r3 = nextNormalizedRand();
@@ -91,89 +91,88 @@ public class PseudoRandom {
     }
 
     public void gaussianExperiments(double median, double variance) {
+        validateVariance(variance);
+
         //generates the test histogram
         int[] occurrences = new int[10];
+
+        //standard deviation is square root of variance
+        double deviation = Math.sqrt(variance);
 
         for (int i = 0; i < 999999; i++) {
             double next = nextGaussian(median, variance);
 
-            //standard deviation is square root of variance
-            double deviation = Math.sqrt(variance);
-
             //standard partitioning for Gaussian distribution out to 5 standard deviations
-            if (next >= median - 5*deviation && next < median - 4*deviation) occurrences[0]++;
-            else if (next >= median - 4*deviation && next < median - 3*deviation) occurrences[1]++;
-            else if (next >= median - 3*deviation && next < median - 2*deviation) occurrences[2]++;
-            else if (next >= median - 2*deviation && next < median - deviation) occurrences[3]++;
-            else if (next >= median - deviation && next < median) occurrences[4]++;
-            else if (next >= median && next < median + deviation) occurrences[5]++;
-            else if (next >= median + deviation && next < median + 2*deviation) occurrences[6]++;
-            else if (next >= median + 2*deviation && next < median + 3*deviation) occurrences[7]++;
-            else if (next >= median + 3*deviation && next < median + 4*deviation) occurrences[8]++;
-            else if (next >= median + 4*deviation && next < next + 5*deviation) occurrences[9]++;
+            for (int j = 0; j < occurrences.length; j++)
+                if (liesInGaussianInterval(next, median, deviation, j)) occurrences[j]++;
         }
 
-        System.out.println("Range                                     Number of Occurrences");
-        System.out.println("[median - 5sigma..median - 4sigma)               " + occurrences[0]);
-        System.out.println("[median - 4sigma..median - 3sigma)               " + occurrences[1]);
-        System.out.println("[median - 3sigma..median - 2sigma)               " + occurrences[2]);
-        System.out.println("[median - 2sigma..median - sigma)                " + occurrences[3]);
-        System.out.println("[median - sigma..median)                         " + occurrences[4]);
-        System.out.println("[median..median + sigma)                         " + occurrences[5]);
-        System.out.println("[median + sigma..median + 2sigma)                " + occurrences[6]);
-        System.out.println("[median + 2sigma..median + 3sigma)               " + occurrences[7]);
-        System.out.println("[median + 3sigma..median + 4sigma)               " + occurrences[8]);
-        System.out.println("[[median + 4sigma..median + 5sigma)              " + occurrences[9]);
+        printGaussianHistogram(occurrences, median, deviation);
     }
 
+
+
+    private boolean liesInGaussianInterval(double element, double median, double deviation, int n) {
+        return (element >= median + (n - 5)*deviation && element < median + (n - 4)*deviation);
+    }
+
+    private void printGaussianHistogram(int[] occurrences, double median, double deviation) {
+        System.out.printf("%-22s%s\n", "Range", "Number of Occurrences");
+
+        for (int i = 0; i < occurrences.length; i++) {
+            double rightEndPoint = median + (i - 4)*deviation;
+            if (rightEndPoint < 0)
+                System.out.printf("[%.2f..%.2f)%14d\n", median + (i - 5)*deviation, median + (i - 4)*deviation, occurrences[i]);
+            else if (rightEndPoint == 0)
+                System.out.printf("[%.2f..%.2f)%15d\n", median + (i - 5)*deviation, median + (i - 4)*deviation, occurrences[i]);
+            else
+                System.out.printf("[%.2f..%.2f)%16d\n", median + (i - 5)*deviation, median + (i - 4)*deviation, occurrences[i]);
+        }
+    }
+
+
+    private void validateVariance(double variance) {
+        if (variance < 0)
+            throw new IllegalArgumentException("Variance is negative! Variance: " + variance);
+    }
+
+    //---------------------my Gaussian methods
+
     //Generate a better sequence of pseudorandom doubles with a Gaussian distribution
-    public double nextBetterGaussian() {
+    public double nextBetterGaussian(double median, double variance) {
+        validateVariance(variance);
+        double deviation = Math.sqrt(variance);
+
+        //uniformly distributed random "seeds" to turn into gaussian distributed random outputs
         double r1 = nextNormalizedRand();
         double r2 = nextNormalizedRand();
 
-        //this is the Box Muller transform. Gives a Gaussian with mean 0, variance 1.
-        //ToDO: extend to Gaussian with any given mean & variance using Z*deviation + mean
+        //this is the Box Muller transform. Gives a Gaussian with given median and variance.
         double sqrt = Math.sqrt(-2 * Math.log(r1));
-        if (ticker == 0) return sqrt *Math.cos(2*3.14*r2);
-        if (ticker == 1) return sqrt *Math.sin(2*3.14*r2);
+        if (ticker == 0) return sqrt *Math.cos(2*3.14*r2)*deviation + median;
+        if (ticker == 1) return sqrt *Math.sin(2*3.14*r2)*deviation + median;
 
         ticker = (ticker + 1) % 2;
         return 0.0;
     }
 
     //Get a bell shaped histogram FFS
-    public void betterGaussianExperiments() {
+    public void betterGaussianExperiments(double median, double variance) {
+        validateVariance(variance);
+        double deviation = Math.sqrt(variance);
+
+        //record the occurrences of random variable in each Gaussian interval
         int[] occurrences = new int[10];
 
         for (int i = 0; i < 999999; i++) {
-            double next = nextBetterGaussian();
+            double next = nextBetterGaussian(median, variance);
 
             //mean from box muller is 0, standard deviation is 1
-
-            if (next >= -5 && next < -4) occurrences[0]++;
-            else if (next >= -4 && next < -3) occurrences[1]++;
-            else if (next >= -3 && next < -2) occurrences[2]++;
-            else if (next >= -2 && next < -1) occurrences[3]++;
-            else if (next >= -1 && next < 0) occurrences[4]++;
-            else if (next >= 0 && next < 1) occurrences[5]++;
-            else if (next >= 1 && next < 2) occurrences[6]++;
-            else if (next >= 2 && next < 3) occurrences[7]++;
-            else if (next >= 3 && next < 4) occurrences[8]++;
-            else if (next >= 4 && next < 5) occurrences[9]++;
+            for (int j = 0; j < occurrences.length; j++)
+                if (liesInGaussianInterval(next, median, deviation, j)) occurrences[j]++;
         }
 
-        System.out.println("Range                 Number of Occurrences");
-        System.out.println("[-5..-4)              " + occurrences[0]);
-        System.out.println("[-4..-3)              " + occurrences[1]);
-        System.out.println("[-3..-2)              " + occurrences[2]);
-        System.out.println("[-2..-1)              " + occurrences[3]);
-        System.out.println("[-1..0)               " + occurrences[4]);
-        System.out.println("[0..1)                " + occurrences[5]);
-        System.out.println("[1..2)                " + occurrences[6]);
-        System.out.println("[2..3)                " + occurrences[7]);
-        System.out.println("[3..4)                " + occurrences[8]);
-        System.out.println("[4..5)                " + occurrences[9]);
+        printGaussianHistogram(occurrences, median, deviation);
 
-        //Todo: clean this^ up.
     }
 }

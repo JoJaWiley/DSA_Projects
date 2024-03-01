@@ -16,15 +16,19 @@ public class PseudoRandomTest {
         PseudoRandom.experiments(555, 99, 7878, 9350);
 
         PseudoRandom.experiments(555, 999, 78780, 935353);
-
+        System.out.println("---------------------------------------");
         System.out.println("Gaussian from book:");
         pr.gaussianExperiments(0.5, 0.0001);
         System.out.println("---------------------------------------");
         System.out.println("Box Muller Gaussian:");
-        pr.betterGaussianExperiments();
+        pr.betterGaussianExperiments(0, 1);
 
-        System.out.println(pr.nextBetterGaussian());
-        System.out.println(pr.nextBetterGaussian());
+        System.out.println(pr.nextBetterGaussian(0, 1));
+        System.out.println(pr.nextBetterGaussian(0, 1));
+
+        System.out.println("---------------------------------------");
+        System.out.println("Box Muller Gaussian with mean 5, variance 1.5:");
+        pr.betterGaussianExperiments(5, 1.5);
 
 
     }
